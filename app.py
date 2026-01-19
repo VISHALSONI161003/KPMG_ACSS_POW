@@ -9,3 +9,4 @@ st.set_page_config(
 
 st.title("Redirecting...")
 st.switch_page("pages/1_Home.py")
+# made by me 
