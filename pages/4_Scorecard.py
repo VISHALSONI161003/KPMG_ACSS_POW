@@ -66,7 +66,10 @@ cid = st.session_state['selected_customer_id']
 @st.cache_data
 def get_data(customer_id):
     try:
-        df = pd.read_csv("d:/KPMG_PROJECTS/ALTERNATE_CREDIT_SCORE/scored_data.csv")
+        # Dynamic path resolution to fix deployment issue
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        csv_path = os.path.join(base_dir, "scored_data.csv")
+        df = pd.read_csv(csv_path)
         # Ensure ID is string for matching
         df['customer_id'] = df['customer_id'].astype(str)
         row = df[df['customer_id'] == str(customer_id)]
