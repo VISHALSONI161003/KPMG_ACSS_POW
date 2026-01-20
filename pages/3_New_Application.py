@@ -43,25 +43,48 @@ st.title("New Customer Application")
 st.markdown("Enter customer details to generate a synthetic profile and score.", help="This generates a realistic 6-month transaction history.")
 
 # --- Form (Native Streamlit Theme) ---
-with st.form("new_app_form"):
-    st.subheader("Personal Details")
-    col1, col2 = st.columns(2)
-    with col1:
-        name = st.text_input("Full Name", "Alex Rivera")
-        email = st.text_input("Email", "alex.rivera@example.com")
-        age = st.number_input("Age", 18, 100, 30)
+# --- Form (Native Streamlit Theme) ---
+st.subheader("Personal Details")
+col1, col2 = st.columns(2)
+with col1:
+    name = st.text_input("Full Name", "Alex Rivera")
+    email = st.text_input("Email", "alex.rivera@example.com")
+    age = st.number_input("Age", 18, 100, 30)
+
+with col2:
+    phone = st.text_input("Phone", "+91 98765 43210")
+    emp_type = st.selectbox("Employment Status", ["Salaried", "Self_Employed", "Gig"])
+    income = st.number_input("Declared Monthly Income (₹)", 10000, 1000000, 45000, step=5000)
+
+address = st.text_area("Address", "123, Tech Park, Bangalore")
+
+st.markdown("---")
+st.subheader("📄 Document Verification")
+st.caption("Upload required documents to process your application.")
+
+uploaded_files = {}
+missing_docs = []
+
+if emp_type == "Salaried":
+    req_docs = ["PAN Card", "Aadhaar Card", "Salary Slips (Last 3 Months)", "Bank Statement (Last 6 Months)"]
+else:
+    req_docs = ["PAN Card", "Aadhaar Card", "ITR (Last 2 Years)", "Bank Statement (Last 12 Months)", "GST/Udyam Reg"]
     
-    with col2:
-        phone = st.text_input("Phone", "+91 98765 43210")
-        emp_type = st.selectbox("Employment Status", ["Salaried", "Self_Employed", "Gig"])
-        income = st.number_input("Declared Monthly Income (₹)", 10000, 1000000, 45000, step=5000)
-    
-    address = st.text_area("Address", "123, Tech Park, Bangalore")
-    
-    st.markdown("---")
-    submitted = st.form_submit_button("🚀 Submit Application", type="primary", use_container_width=True)
+for doc in req_docs:
+    f = st.file_uploader(f"Upload {doc}", type=['pdf', 'jpg', 'png'], key=doc)
+    if f is not None:
+        uploaded_files[doc] = f
+    else:
+        missing_docs.append(doc)
+        
+st.markdown("---")
+submitted = st.button("🚀 Submit Application", type="primary", use_container_width=True)
 
 if submitted:
+    if missing_docs:
+        st.error(f"⚠️ Please upload all required documents: {', '.join(missing_docs)}")
+        st.stop()
+        
     status_text = st.empty()
     bar = st.progress(0)
     
@@ -72,10 +95,11 @@ if submitted:
         gen = SyntheticGenerator()
         profile = gen.generate_profile(name, emp_type, income)
         
-        # 2. Generate Transactions
-        status_text.text("Simulating banking history...")
+        # 2. Generate Transactions & Silent Data
+        status_text.text("Simulating banking & device history...")
         bar.progress(30)
-        txns_df = gen.generate_transactions(profile['customer_id'], emp_type, income)
+        txns_df = gen.generate_transactions(profile['customer_id'], emp_type, income, name=name)
+        silent_data = gen.generate_silent_data(profile['customer_id'], name=name)
         
         # 3. Hybrid ML Pipeline
         status_text.text("Extracting behavioral signals...")
@@ -117,6 +141,12 @@ if submitted:
         record['credit_score'] = final_score
         record['risk_band'] = risk_band
         record['model_version'] = "v1_hybrid"
+        
+        # Merge Silent Data
+        record.update(silent_data)
+        # Save Verified Docs for Scorecard Logic Display
+        record['verified_documents'] = str(list(uploaded_files.keys()))
+        record['docs_verified_flag'] = True
         
         # Add labels for UI backward compatibility if needed (Stability/Vol/Disc)
         # We can map back from signals or the LabelGenerator for "display" purposes if UI needs them

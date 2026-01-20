@@ -136,3 +136,43 @@ class SyntheticGenerator:
             'transaction_channel': channel,
             'description': desc # Added for Signal Extractor compatibility
         }
+
+    def generate_silent_data(self, customer_id, name=""):
+        """
+        Simulates 'Silent Data' collection from device SDKs.
+        Includes Telco, Device, and App usage signals.
+        """
+        name_lower = name.lower()
+        
+        # Default Probabilistic Profile
+        data = {
+            'sim_age_days': np.random.randint(100, 2000),
+            'device_model': np.random.choice(['Samsung Galaxy M31', 'Redmi Note 10', 'iPhone 13', 'Vivo V20', 'Oppo A5']),
+            'is_rooted': False,
+            'installed_apps': ['WhatsApp', 'Facebook', 'Instagram', 'Paytm', 'PhonePe', 'Uber'],
+            'geo_variance': np.random.uniform(0.1, 0.4), # Low variance = predictable (Home-Work)
+            'utility_bill_payment_history': 'Good'
+        }
+        
+        # Scenario Overrides (Deterministic for Demo)
+        if "verma" in name_lower: # Scenario 1: Approved
+             data['sim_age_days'] = 1800 # 5 Years
+             data['utility_bill_payment_history'] = 'Excellent'
+             
+        elif "khan" in name_lower: # Scenario 2: Rejected (Gambling)
+             data['installed_apps'] += ['Dream11', 'RummyCircle', 'LazyPay', 'Simpl']
+             data['sim_age_days'] = 400
+             
+        elif "devi" in name_lower: # Scenario 3: NTC Approved (Strong Geo/Social)
+             data['geo_variance'] = 0.05 # Very stable (Shopkeeper always at shop)
+             data['device_model'] = 'Samsung Galaxy J7' # Older phone
+             
+        elif "singh" in name_lower: # Scenario 4: Fraud
+             data['sim_age_days'] = 3 # Brand new SIM
+             data['is_rooted'] = True
+             data['device_model'] = 'Emulator/Unknown'
+             data['geo_variance'] = 0.9 # High variance
+             
+        # Convert list to string for CSV storage
+        data['installed_apps'] = str(data['installed_apps'])
+        return data

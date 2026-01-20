@@ -81,15 +81,31 @@ if not df.empty:
         filtered_df = df.copy()
         
     # Styling the dataframe (Native Streamlit Table handles Dark Mode well)
+    # Styling the dataframe (Native Streamlit Table handles Dark Mode well)
+    # Check for verification flag
+    if 'docs_verified_flag' not in filtered_df.columns:
+        filtered_df['docs_verified_flag'] = False
+        
+    filtered_df['status'] = filtered_df['docs_verified_flag'].apply(lambda x: "✅ Verified" if x == True else "⚠️ Pending")
+    
+    # 3. Verified Filter (Default: Hide Pending)
+    col_filter, col_spacer = st.columns([1, 4])
+    with col_filter:
+        show_pending = st.checkbox("Show Pending Applications", value=False)
+    
+    if not show_pending:
+        filtered_df = filtered_df[filtered_df['docs_verified_flag'] == True]
+    
     st.dataframe(
-        filtered_df[['customer_id', 'customer_name', 'employment_type', 'declared_monthly_income', 'risk_band', 'credit_score']],
-        width="stretch",
+        filtered_df[['customer_id', 'customer_name', 'employment_type', 'declared_monthly_income', 'status', 'risk_band', 'credit_score']],
+        use_container_width=True,
         hide_index=True,
         column_config={
             "customer_id": "ID",
             "customer_name": "Applicant Name",
             "employment_type": "Employment",
             "declared_monthly_income": st.column_config.NumberColumn("Income", format="₹%d"),
+            "status": "Docs Status",
             "risk_band": "Risk Band",
             "credit_score": "Score"
         }

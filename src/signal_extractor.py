@@ -93,7 +93,18 @@ class SignalExtractor:
         if avg_outflow > 0:
             risky_spend_ratio = risky_spend_vol / (avg_outflow * 6) # Ratio against total outflow
             
-        # Return strict Feature Vector
+        # Prepare Trend Data for Visualizations (Last 6 Months)
+        # Re-index to ensure all months are present (fill missing with 0)
+        full_period = pd.period_range(start=transactions_df['month'].min(), end=transactions_df['month'].max(), freq='M')
+        
+        inflow_series = monthly_inflows.reindex(full_period, fill_value=0)
+        outflow_series = monthly_outflows.reindex(full_period, fill_value=0)
+        
+        # Convert to list and ensure JSON serializable (float, not numpy type)
+        inflow_trend = [float(x) for x in inflow_series.values]
+        outflow_trend = [float(x) for x in outflow_series.values]
+
+        # Return strict Feature Vector + Visual Metadata
         return {
             "customer_id": profile.get('customer_id'),
             "avg_monthly_inflow": avg_inflow,
@@ -102,7 +113,9 @@ class SignalExtractor:
             "net_cash_retention_ratio": net_cash_retention_ratio,
             "cash_surplus_stability": cash_surplus_stability,
             "bill_miss_count": bill_miss_count,
-            "risky_spend_ratio": risky_spend_ratio
+            "risky_spend_ratio": risky_spend_ratio,
+            "inflow_trend": str(inflow_trend),   # Stringified for CSV storage convenience
+            "outflow_trend": str(outflow_trend)
         }
 
     def _get_empty_signals(self):
