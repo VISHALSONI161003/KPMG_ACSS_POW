@@ -83,7 +83,7 @@ if not df.empty:
     # Styling the dataframe (Native Streamlit Table handles Dark Mode well)
     st.dataframe(
         filtered_df[['customer_id', 'customer_name', 'employment_type', 'declared_monthly_income', 'risk_band', 'credit_score']],
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         column_config={
             "customer_id": "ID",

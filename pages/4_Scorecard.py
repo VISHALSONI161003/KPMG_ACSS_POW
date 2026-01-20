@@ -195,17 +195,17 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
     val = customer.get('stability_score', 0)
-    st.plotly_chart(create_gauge(val, "Stability", "#4facfe"), use_container_width=True)
+    st.plotly_chart(create_gauge(val, "Stability", "#4facfe"), key="stability_gauge", width="stretch") # Auto-width by default in columns, or use explicit theme support
     st.caption("Income regularity & Job status")
 
 with col2:
     val = customer.get('discipline_score', 0)
-    st.plotly_chart(create_gauge(val, "Discipline", "#00f2fe"), use_container_width=True)
+    st.plotly_chart(create_gauge(val, "Discipline", "#00f2fe"), key="discipline_gauge", width="stretch")
     st.caption("Bill payments & Savings ratio")
 
 with col3:
     val = customer.get('volatility_score', 0)
-    st.plotly_chart(create_gauge(val, "Volatility", "#a8edea"), use_container_width=True)
+    st.plotly_chart(create_gauge(val, "Volatility", "#a8edea"), key="volatility_gauge", width="stretch")
     st.caption("Cash flow consistency")
 
 st.divider()
