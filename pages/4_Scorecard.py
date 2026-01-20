@@ -409,6 +409,65 @@ impact_data = {
 
 st.table(pd.DataFrame(impact_data))
 
+st.divider()
+
+# --- Spending & Lifestyle Analysis (New) ---
+st.subheader("🛍️ Spending & Lifestyle Analysis")
+
+try:
+    import json
+    # Parse Data (Handle existing/legacy rows gracefully)
+    spend_json = customer.get('spending_breakdown', '{}')
+    life_json = customer.get('lifestyle_scores', '{}')
+    
+    # Handle NaN/Float case if CSV read as slightly wrong type
+    if pd.isna(spend_json) or isinstance(spend_json, float): spend_json = '{}'
+    if pd.isna(life_json) or isinstance(life_json, float): life_json = '{}'
+    
+    spend_data = json.loads(str(spend_json).replace("'", '"'))
+    life_data = json.loads(str(life_json).replace("'", '"'))
+    
+    col_life_1, col_life_2 = st.columns([1, 1])
+    
+    with col_life_1:
+         st.markdown("**Payment Analysis (Category Split)**")
+         if spend_data:
+             labels = list(spend_data.keys())
+             values = list(spend_data.values())
+             fig_pie = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.4)])
+             fig_pie.update_layout(
+                 margin=dict(l=0, r=0, t=0, b=0),
+                 height=300,
+                 legend=dict(orientation="v", yanchor="top", y=1.0, xanchor="left", x=1.0)
+             )
+             st.plotly_chart(fig_pie, use_container_width=True)
+         else:
+             st.info("Insufficient data for categorical breakdown.")
+
+    with col_life_2:
+        st.markdown("**Lifestyle Scoring**")
+        
+        ess = life_data.get('essential_ratio', 0) * 100
+        disc = life_data.get('discretionary_ratio', 0) * 100
+        digi = life_data.get('digital_savviness', 0)
+        
+        st.markdown("##### 🛒 Essential vs Discretionary")
+        st.progress(ess/100, text=f"Essentials ({ess:.0f}%) - Groceries, Utilities, Rent")
+        st.progress(disc/100, text=f"Lifestyle ({disc:.0f}%) - Dining, Travel, Shopping")
+        
+        st.markdown("##### 📱 Digital Savviness")
+        st.write(f"UPI/Digital Adoption: **{digi}%**")
+        if digi > 80:
+             st.caption("User is highly digitally active (High Trust for Micro-Lending)")
+        elif digi > 40:
+             st.caption("User has moderate digital footprint.")
+        else:
+             st.caption("User relies on Cash/Atm (Lower Visbility)")
+
+except Exception as e:
+    st.error(f"Could not load lifestyle data: {e}")
+
+
 # 4. Prediction Logic Narrative
 with st.expander("📝 Understanding the 'Alternate Credit Score' Model", expanded=True):
     st.markdown(f"""

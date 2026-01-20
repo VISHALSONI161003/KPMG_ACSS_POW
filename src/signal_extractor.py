@@ -7,6 +7,31 @@ class SignalExtractor:
     These signals serve as the features (X) for the ML model.
     """
     
+    def _categorize_transaction(self, description):
+        description = description.lower()
+        if any(x in description for x in ['swiggy', 'zomato', 'restaurant', 'cafe', 'food', 'mcdonalds', 'dominos', 'dining']):
+            return 'Dining & Food'
+        elif any(x in description for x in ['uber', 'ola', 'fuel', 'petrol', 'parking', 'toll', 'irctc', 'flight', 'airline', 'travel', 'cab']):
+            return 'Travel & Commute'
+        elif any(x in description for x in ['netflix', 'spotify', 'movie', 'cinema', 'bookmyshow', 'hotstar', 'prime', 'game', 'entertainment']):
+            return 'Entertainment'
+        elif any(x in description for x in ['amazon', 'flipkart', 'myntra', 'shopping', 'retail', 'store', 'zara', 'h&m']):
+            return 'Shopping'
+        elif any(x in description for x in ['grocery', 'supermarket', 'mart', 'bigbasket', 'blinkit', 'zepto']):
+            return 'Groceries'
+        elif any(x in description for x in ['bill', 'electricity', 'water', 'gas', 'broadband', 'jio', 'airtel', 'vi ', 'bsnl', 'utilities']):
+            return 'Utilities'
+        elif any(x in description for x in ['emi', 'loan', 'finance', 'insurance', 'premium', 'sip', 'mutual fund', 'zerodha']):
+            return 'Financial Services'
+        elif any(x in description for x in ['atm', 'withdrawal', 'cash']):
+            return 'Cash Withdrawal'
+        elif any(x in description for x in ['rent', 'maintenance']):
+            return 'Housing'
+        elif any(x in description for x in ['medical', 'pharmacy', 'doctor', 'hospital', 'medicine', 'drug']):
+            return 'Health & Medical'
+        else:
+            return 'Others'
+
     def extract_signals(self, transactions_df, profile):
         """
         Args:
@@ -104,7 +129,39 @@ class SignalExtractor:
         inflow_trend = [float(x) for x in inflow_series.values]
         outflow_trend = [float(x) for x in outflow_series.values]
 
-        # Return strict Feature Vector + Visual Metadata
+        # --- Payment Analysis & Lifestyle Scoring ---
+        spending_breakdown = {}
+        lifestyle_scores = {
+            'stability_affinity': 0, 
+            'digital_savviness': 0,
+            'luxury_index': 0
+        }
+        
+        if not debits.empty:
+            # 1. Categorization
+            debits = debits.copy()
+            debits['category'] = debits['description'].apply(self._categorize_transaction)
+            spending_breakdown = debits.groupby('category')['transaction_amount'].sum().astype(float).to_dict()
+            
+            # 2. Lifestyle Logic
+            total_spend = debits['transaction_amount'].sum()
+            if total_spend > 0:
+                # Essential vs Discretionary
+                essentials = ['Groceries', 'Utilities', 'Housing', 'Financial Services', 'Health & Medical']
+                discretionary = ['Dining & Food', 'Entertainment', 'Shopping', 'Travel & Commute']
+                
+                essential_spend = debits[debits['category'].isin(essentials)]['transaction_amount'].sum()
+                discretionary_spend = debits[debits['category'].isin(discretionary)]['transaction_amount'].sum()
+                
+                lifestyle_scores['essential_ratio'] = round(essential_spend / total_spend, 2)
+                lifestyle_scores['discretionary_ratio'] = round(discretionary_spend / total_spend, 2)
+                
+                # Digital Savviness (UPI usage)
+                upi_txns = debits[debits['description'].str.contains('UPI', case=False, na=False)].shape[0]
+                total_txns = debits.shape[0]
+                lifestyle_scores['digital_savviness'] = round((upi_txns / total_txns) * 100, 1) if total_txns > 0 else 0
+                
+        import json
         return {
             "customer_id": profile.get('customer_id'),
             "avg_monthly_inflow": avg_inflow,
@@ -114,8 +171,10 @@ class SignalExtractor:
             "cash_surplus_stability": cash_surplus_stability,
             "bill_miss_count": bill_miss_count,
             "risky_spend_ratio": risky_spend_ratio,
-            "inflow_trend": str(inflow_trend),   # Stringified for CSV storage convenience
-            "outflow_trend": str(outflow_trend)
+            "inflow_trend": str(inflow_trend),   
+            "outflow_trend": str(outflow_trend),
+            "spending_breakdown": json.dumps(spending_breakdown), # JSON String for CSV
+            "lifestyle_scores": json.dumps(lifestyle_scores)      # JSON String for CSV
         }
 
     def _get_empty_signals(self):
