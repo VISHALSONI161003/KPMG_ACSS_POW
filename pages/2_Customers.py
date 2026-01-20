@@ -13,11 +13,14 @@ def load_data():
     try:
         # Load from the scored data artifact
         # construct path dynamically to be safe
+        from pathlib import Path
         import os
-        project_root = os.getcwd()
-        data_path = os.path.join(project_root, "scored_data.csv")
         
-        if not os.path.exists(data_path):
+        # Robustly find the project root (one level up from pages/)
+        project_root = Path(__file__).parent.parent
+        data_path = project_root / "scored_data.csv"
+        
+        if not data_path.exists():
              raise ValueError("File not found")
              
         df = pd.read_csv(data_path)
@@ -25,7 +28,8 @@ def load_data():
             raise ValueError("Empty CSV")
         sorted_df = df.sort_values(by='credit_score', ascending=False)
         return sorted_df
-    except Exception:
+    except Exception as e:
+        st.toast(f"Using Mock Data: {str(e)}", icon="⚠️")
         # Generate MOCK DATA for Demo
         mock_data = [
             {'customer_id': 'CUST-001', 'customer_name': 'Rajesh Kumar', 'employment_type': 'Salaried', 'declared_monthly_income': 85000, 'risk_band': 'Low Risk', 'credit_score': 780},
