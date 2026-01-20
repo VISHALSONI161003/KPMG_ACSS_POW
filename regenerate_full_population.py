@@ -35,6 +35,9 @@ def regenerate_population(n=50):
         scenario_idx = np.random.choice([0, 1, 2, 3], p=[0.35, 0.25, 0.25, 0.15])
         first_name = np.random.choice(first_names)
         
+        # Sequential ID Generation
+        cid = f"ACS{i+1:03d}" # ACS001, ACS002...
+        
         if scenario_idx == 0:
             # Scenario 1: Mr. Verma (Software Developer - Safe)
             surname = "Verma"
@@ -60,10 +63,10 @@ def regenerate_population(n=50):
             income = np.random.randint(40000, 80000)
             
         name = f"{first_name} {surname}"
-        print(f"[{i+1}/{n}] Processing {name} ({emp_type})...")
+        print(f"[{i+1}/{n}] Processing {name} ({emp_type}) ID: {cid}...")
         
-        # 1. Profile
-        profile = gen.generate_profile(name, emp_type, income)
+        # 1. Profile with Custom ID
+        profile = gen.generate_profile(name, emp_type, income, customer_id=cid)
         
         # 2. Transactions
         txns_df = gen.generate_transactions(profile['customer_id'], emp_type, income, name=name)

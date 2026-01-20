@@ -97,11 +97,28 @@ if submitted:
     bar = st.progress(0)
     
     try:
+        # --- Auto-Increment ID Logic ---
+        project_root = find_project_root(os.getcwd()) or os.getcwd()
+        data_path = os.path.join(project_root, "scored_data.csv")
+        next_id = "ACS001" # Default
+        
+        if os.path.exists(data_path):
+            try:
+                existing_df = pd.read_csv(data_path)
+                if not existing_df.empty and 'customer_id' in existing_df.columns:
+                    # Filter for ACS IDs
+                    acs_ids = existing_df['customer_id'].astype(str).str.extract(r'ACS(\d+)').dropna().astype(int)
+                    if not acs_ids.empty:
+                        max_id = acs_ids[0].max()
+                        next_id = f"ACS{max_id + 1:03d}"
+            except Exception:
+                pass # Fallback to default if read fails
+                
         # 1. Generate Profile
-        status_text.text("Generating digital footprint...")
+        status_text.text(f"Generating digital footprint for ID: {next_id}...")
         bar.progress(10)
         gen = SyntheticGenerator()
-        profile = gen.generate_profile(name, emp_type, income)
+        profile = gen.generate_profile(name, emp_type, income, customer_id=next_id)
         
         # 2. Generate Transactions & Silent Data
         status_text.text("Simulating banking & device history...")

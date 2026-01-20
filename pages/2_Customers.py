@@ -26,7 +26,7 @@ def load_data():
         df = pd.read_csv(data_path)
         if df.empty:
             raise ValueError("Empty CSV")
-        sorted_df = df.sort_values(by='credit_score', ascending=False)
+        sorted_df = df.sort_values(by='customer_id', ascending=True)
         return sorted_df
     except Exception as e:
         st.toast(f"Using Mock Data: {str(e)}", icon="⚠️")
@@ -88,13 +88,8 @@ if not df.empty:
         
     filtered_df['status'] = filtered_df['docs_verified_flag'].apply(lambda x: "✅ Verified" if x == True else "⚠️ Pending")
     
-    # 3. Verified Filter (Default: Hide Pending)
-    col_filter, col_spacer = st.columns([1, 4])
-    with col_filter:
-        show_pending = st.checkbox("Show Pending Applications", value=False)
-    
-    if not show_pending:
-        filtered_df = filtered_df[filtered_df['docs_verified_flag'] == True]
+    # 3. Verified Filter (Removed per user request - Show All)
+    # filtered_df = filtered_df # No filter applied
     
     st.dataframe(
         filtered_df[['customer_id', 'customer_name', 'employment_type', 'declared_monthly_income', 'status', 'risk_band', 'credit_score']],

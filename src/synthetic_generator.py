@@ -11,10 +11,11 @@ class SyntheticGenerator:
             'income': ['Salary', 'Freelance Payment', 'Transfer In', 'Interest']
         }
 
-    def generate_profile(self, name, emp_type, income):
-        """Creates a basic customer profile context"""
+    def generate_profile(self, name, emp_type, income, customer_id=None):
+        """Creates a customer profile, optionally with a specific ID."""
+        cid = customer_id if customer_id else str(uuid.uuid4())[:8]
         return {
-            'customer_id': str(uuid.uuid4())[:8],
+            'customer_id': cid,
             'customer_name': name,
             'employment_type': emp_type,
             'declared_monthly_income': float(income),
