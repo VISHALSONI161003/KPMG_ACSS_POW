@@ -538,73 +538,7 @@ with col_pipe_7:
 
 st.divider()
 
-# 2. Mathematical Explanation
-st.markdown("#### 2. The Mathematics Behind the Score 🧮")
-st.markdown("Unlike black-box AI, Helix uses a linear weighted model for total explainability.")
 
-# Formula
-st.latex(r'''
-Score = \text{Base} + (\text{Stability} \times W_1) + (\text{Retention} \times W_2) + (\text{Discipline} \times W_3) - \text{Penalties}
-''')
-
-# Actual Calculation Breakdown
-with st.expander("Show My Calculation", expanded=True):
-    c1, c2, c3 = st.columns(3)
-    
-    # Get component scores safely
-    s_stab = customer.get('stability_score', 0)
-    s_disc = customer.get('discipline_score', 0)
-    s_vol = customer.get('volatility_score', 0)
-    
-    # --- Dynamic Calibration Logic (Reverse Engineering for Display) ---
-    base_score = 300
-    risk_pen = 75 if customer.get('risky_spend_ratio', 0) > 0 else 0
-    
-    # The points we need to explain (Gap)
-    target_gap = score - base_score + risk_pen
-    
-    # Calculate raw weighted contribution first
-    w_stab = 2.5
-    w_ret = 2.0
-    w_disc = 1.5
-    
-    raw_stab_pts = s_stab * w_stab
-    raw_ret_pts = s_vol * w_ret # s_vol maps to Retention in this UI context? (Check mapping below: Stability, Retention(s_vol?), Discipline)
-    # Wait, the previous code used s_vol for Retention in the display: "Retention Bonus ... s_vol". 
-    # Let's stick to that mapping or check logic.
-    # Logic Table says: "Net Cash Retention". Usually s_vol is Volatility. 
-    # Let's assume s_vol was used for Retention in the previous snippet, 
-    # but strictly speaking retention should be calculated. 
-    # Let's stick to the previous code's variable mapping to avoid changing logic too much, just the math.
-    # Previous: st.metric("Retention Bonus", f"+{s_vol * 2.0:.0f} pts", delta=f"Score: {s_vol}/100",...)
-    
-    raw_disc_pts = s_disc * w_disc
-    
-    total_raw = raw_stab_pts + raw_ret_pts + raw_disc_pts
-    
-    if total_raw == 0:
-        factor = 0
-    else:
-        factor = target_gap / total_raw
-        
-    # Calibrated Points
-    disp_stab = int(raw_stab_pts * factor)
-    disp_ret = int(raw_ret_pts * factor)
-    # Assign remainder to Discipline to ensure exact sum
-    disp_disc = int(target_gap - disp_stab - disp_ret)
-    
-    with c1:
-        st.metric("Base Score", f"{base_score} pts", help="Everyone starts here")
-        st.metric("Stability Impact", f"+{disp_stab} pts", delta=f"Score: {s_stab}/100", help=f"Weighted Contribution (approx {w_stab}x)")
-        
-    with c2:
-        st.metric("Retention Bonus", f"+{disp_ret} pts", delta=f"Score: {s_vol}/100", help=f"Weighted Contribution (approx {w_ret}x)")
-        st.metric("Discipline Add-on", f"+{disp_disc} pts", delta=f"Score: {s_disc}/100", help=f"Weighted Contribution (approx {w_disc}x)")
-        
-    with c3:
-        st.metric("Risk Penalties", f"-{risk_pen} pts", delta_color="inverse", help="Gambling/Bouncing Checks")
-        st.markdown("---")
-        st.metric("FINAL HELIX SCORE", f"{score}", delta="Calculated Total (Matches Exactly)")
 
 st.divider()
 
