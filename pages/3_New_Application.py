@@ -28,9 +28,17 @@ else:
     if os.getcwd() not in sys.path:
         sys.path.insert(0, os.getcwd())
 
+import importlib
 try:
+    import src.synthetic_generator
+    import src.scoring_engine
+    import src.signal_extractor # Pre-load to avoid partial init
+    
+    # Force Reload to pick up latest code changes (Fix for AttributeError on new methods)
+    importlib.reload(src.synthetic_generator)
+    importlib.reload(src.scoring_engine)
+    
     from src.synthetic_generator import SyntheticGenerator
-    # from src.data_processor import DataProcessor # Logic inlined to avoid dependency issues
     from src.scoring_engine import MLScorer
 except ImportError as e:
     st.error(f"System Error: Could not load backend modules.")

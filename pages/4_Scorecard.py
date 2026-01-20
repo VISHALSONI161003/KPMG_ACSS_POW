@@ -304,6 +304,71 @@ with col_hero_3:
 
 st.divider()
 
+# --- Credit History & Trends (Moved Here) ---
+st.subheader("📈 Credit History & Trends")
+
+# Mock Historical Data based on current score
+import random
+score = customer['credit_score'] # Defined locally for this block
+current_score = int(score)
+history = []
+curr = current_score
+for i in range(6):
+    history.insert(0, curr)
+    curr = curr - random.randint(-10, 25) # Simulate slight growth or fluctuation
+
+months = ["Aug", "Sep", "Oct", "Nov", "Dec", "Jan"]
+
+col_trend_1, col_trend_2 = st.columns([1.5, 1])
+
+with col_trend_1:
+    st.markdown("**1. Score Evolution (Last 6 Months)**")
+    # Line Chart
+    fig_hist = go.Figure()
+    fig_hist.add_trace(go.Scatter(
+        x=months, y=history, 
+        mode='lines+markers+text',
+        text=history,
+        textposition="top center",
+        line=dict(color='#636efa', width=4),
+        marker=dict(size=10, color='white', line=dict(color='#636efa', width=2))
+    ))
+    fig_hist.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        showlegend=False,
+        height=250,
+        margin=dict(l=20, r=20, t=10, b=20),
+        yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.1)', range=[min(history)-20, 900]),
+        xaxis=dict(showgrid=False)
+    )
+    st.plotly_chart(fig_hist, use_container_width=True)
+
+with col_trend_2:
+    st.markdown("**2. Repayment Values**")
+    # Donut Chart for Payment History
+    # Simulate based on score
+    on_time_pct = 98 if score > 700 else (85 if score > 600 else 60)
+    
+    fig_pay = go.Figure(data=[go.Pie(
+        labels=['On-Time', 'Late/Missed'],
+        values=[on_time_pct, 100-on_time_pct],
+        hole=.7,
+        marker=dict(colors=['#00cc96', '#ef553b']),
+        textinfo='none'
+    )])
+    
+    fig_pay.update_layout(
+        showlegend=True,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5),
+        height=250,
+        margin=dict(l=20, r=20, t=0, b=20),
+        annotations=[dict(text=f"{on_time_pct}%", x=0.5, y=0.5, font_size=30, showarrow=False, font_color="white")]
+    )
+    st.plotly_chart(fig_pay, use_container_width=True)
+
+st.divider()
+
 # 3. New Feature Impact Matrix (Detailed Metrics)
 st.subheader("📊 Feature Impact Matrix (Behavioral Analysis)")
 
@@ -565,68 +630,6 @@ st.caption(f"Analyst Note: The score of {int(score)} is primarily driven by stro
 
 
 
-st.divider()
 
-# --- 5. Credit History & Trends (New Feature) ---
-st.subheader("📈 Credit History & Trends")
-
-# Mock Historical Data based on current score
-import random
-current_score = int(score)
-history = []
-curr = current_score
-for i in range(6):
-    history.insert(0, curr)
-    curr = curr - random.randint(-10, 25) # Simulate slight growth or fluctuation
-
-months = ["Aug", "Sep", "Oct", "Nov", "Dec", "Jan"]
-
-col_trend_1, col_trend_2 = st.columns([1.5, 1])
-
-with col_trend_1:
-    st.markdown("**1. Score Evolution (Last 6 Months)**")
-    # Line Chart
-    fig_hist = go.Figure()
-    fig_hist.add_trace(go.Scatter(
-        x=months, y=history, 
-        mode='lines+markers+text',
-        text=history,
-        textposition="top center",
-        line=dict(color='#636efa', width=4),
-        marker=dict(size=10, color='white', line=dict(color='#636efa', width=2))
-    ))
-    fig_hist.update_layout(
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
-        showlegend=False,
-        height=250,
-        margin=dict(l=20, r=20, t=10, b=20),
-        yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.1)', range=[min(history)-20, 900]),
-        xaxis=dict(showgrid=False)
-    )
-    st.plotly_chart(fig_hist, use_container_width=True)
-
-with col_trend_2:
-    st.markdown("**2. Repayment Values**")
-    # Donut Chart for Payment History
-    # Simulate based on score
-    on_time_pct = 98 if score > 700 else (85 if score > 600 else 60)
-    
-    fig_pay = go.Figure(data=[go.Pie(
-        labels=['On-Time', 'Late/Missed'],
-        values=[on_time_pct, 100-on_time_pct],
-        hole=.7,
-        marker=dict(colors=['#00cc96', '#ef553b']),
-        textinfo='none'
-    )])
-    
-    fig_pay.update_layout(
-        showlegend=True,
-        legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5),
-        height=250,
-        margin=dict(l=20, r=20, t=0, b=20),
-        annotations=[dict(text=f"{on_time_pct}%", x=0.5, y=0.5, font_size=30, showarrow=False, font_color="white")]
-    )
-    st.plotly_chart(fig_pay, use_container_width=True)
 
 
