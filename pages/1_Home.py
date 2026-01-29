@@ -2,6 +2,18 @@ import streamlit as st
 
 st.set_page_config(layout="wide", page_title="Helix: Home", page_icon="💳")
 
+# --- Keep Session Alive ---
+import sys
+import os
+# Ensure src is in path logic (though usually added by app.py, pages run in new contexts)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+from src.session_utils import keep_alive
+keep_alive()
+
 # Custom CSS for Dark Landing Page
 st.markdown("""
 <style>

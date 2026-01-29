@@ -29,6 +29,10 @@ from src.explainability import Explainer
 
 st.set_page_config(layout="wide", page_title="Helix: Scorecard", page_icon="📈")
 
+# --- Keep Session Alive ---
+from src.session_utils import keep_alive
+keep_alive()
+
 # --- Custom CSS (Tweaks only, respecting global theme) ---
 st.markdown("""
 <style>

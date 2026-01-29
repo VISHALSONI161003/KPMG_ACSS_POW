@@ -4,6 +4,18 @@ import numpy as np
 
 st.set_page_config(layout="wide", page_title="Helix: Customers", page_icon="👥")
 
+# --- Keep Session Alive ---
+import sys
+import os
+# Ensure src is in path logic
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+from src.session_utils import keep_alive
+keep_alive()
+
 # Removed hardcoded Light Theme CSS to respect global config.toml
 
 # --- Logic ---

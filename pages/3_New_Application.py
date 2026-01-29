@@ -47,6 +47,10 @@ except ImportError as e:
 
 st.set_page_config(layout="wide", page_title="Helix: New App", page_icon="📝")
 
+# --- Keep Session Alive ---
+from src.session_utils import keep_alive
+keep_alive()
+
 st.title("New Customer Application")
 st.markdown("Enter customer details to generate a synthetic profile and score.", help="This generates a realistic 6-month transaction history.")
 

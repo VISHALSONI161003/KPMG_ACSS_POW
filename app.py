@@ -7,6 +7,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# --- Keep Session Alive ---
+from src.session_utils import keep_alive
+keep_alive()
+
 # Custom CSS for Dark Landing Page
 st.markdown("""
 <style>
